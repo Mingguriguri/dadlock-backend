@@ -25,6 +25,11 @@ import org.springframework.web.filter.CorsFilter;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private static final String[] AUTH_WHITELIST = {
+            "/oauth2/**", "/swagger-ui/**", "/api-docs", "/swagger-ui-custom.html",
+            "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html", "/reissue",
+    }; // 인증 필터를 거치지 않는 경로
+
     // 의존성 주입
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtUtil jwtUtil; // jwtutil 생성자 주입
@@ -76,8 +81,8 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/join").authenticated()
-                        .anyRequest().permitAll()
+                        .requestMatchers(AUTH_WHITELIST).permitAll()
+                        .anyRequest().authenticated() // 나머지 요청은 모두 인증 필요
                 );
 
         //oauth2
