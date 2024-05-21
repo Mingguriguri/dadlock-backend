@@ -28,6 +28,5 @@ public class WebAppRequestDTO {
     public static class UpdateDTO {
         private String appUrl;
         private int timeLimit;
-
     }
 }
