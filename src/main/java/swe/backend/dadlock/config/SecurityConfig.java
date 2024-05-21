@@ -1,5 +1,7 @@
 package swe.backend.dadlock.config;
 
+import org.springframework.security.web.authentication.logout.LogoutFilter;
+import swe.backend.dadlock.filter.CustomLogoutFilter;
 import swe.backend.dadlock.service.JwtUtil;
 import swe.backend.dadlock.service.RedisUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -92,6 +94,8 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
                 );
+
+        http.addFilterBefore(new CustomLogoutFilter(jwtUtil, redisUtil), LogoutFilter.class);
 
         //세션 설정
         http
