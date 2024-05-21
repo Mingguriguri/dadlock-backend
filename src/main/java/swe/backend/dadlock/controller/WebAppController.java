@@ -36,15 +36,16 @@ public class WebAppController {
         List<WebAppResponseDTO.CommonDTO> webAppUrlList = webAppService.getUrlList(user.getName());
         return ApiResponse.responseSuccess(StatusEnum.OK, webAppUrlList, "회원의 URL 리스트 조회 성공!");
     }
-    @GetMapping("/test")
-    public ResponseEntity<String> testEndpoint(@AuthenticationPrincipal CustomOAuth2User user) {
-        logger.info("User: {}", user);
-        if (user == null) {
-            logger.error("User is null");
-            return ResponseEntity.notFound().build();
-        }
-        return new ResponseEntity<>("User GoogleId: " + user.getGoogleId(), HttpStatus.OK);
-    }
+
+//    @GetMapping("/test")
+//    public ResponseEntity<String> testEndpoint(@AuthenticationPrincipal CustomOAuth2User user) {
+//        logger.info("User: {}", user);
+//        if (user == null) {
+//            logger.error("User is null");
+//            return ResponseEntity.notFound().build();
+//        }
+//        return new ResponseEntity<>("User GoogleId: " + user.getGoogleId(), HttpStatus.OK);
+//    }
 
     @PostMapping
     public ApiResponse<WebAppResponseDTO.CommonDTO> createBlockUrl(@AuthenticationPrincipal CustomOAuth2User user, @RequestBody WebAppRequestDTO.CreateDTO requestDTO) {

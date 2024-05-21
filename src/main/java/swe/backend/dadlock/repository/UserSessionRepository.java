@@ -8,13 +8,15 @@ import swe.backend.dadlock.entity.UserSession;
 import swe.backend.dadlock.entity.WebApp;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserSessionRepository extends JpaRepository<UserSession, Long> {
 
-    @Query("select w " +
-            "from WebApp w " +
-            "where w.user.googleId = :googleId " +
-            "order by w.id asc")
-    List<WebApp> findWebAppListByGoogleId(@Param("googleId") String googleId);
+    @Query("select s " +
+            "from UserSession s " +
+            "where s.user.googleId = :googleId " +
+            "and s.appUrl = :appUrl "+
+            "order by s.id asc")
+    Optional<UserSession> findByUserAndAppUrl(@Param("googleId") String googleId, @Param("appUrl") String appUrl);
 }
