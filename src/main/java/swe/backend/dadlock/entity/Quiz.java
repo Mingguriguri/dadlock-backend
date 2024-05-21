@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class Quiz {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "quiz_id")
     private Long quizId;
 
     private String subject;
@@ -27,13 +27,13 @@ public class Quiz {
     @Column(columnDefinition = "TEXT")
     private String question;
 
-    @Column(nullable = false)
     private String optionA;
-
     private String optionB;
     private String optionC;
     private String optionD;
     private String optionE;
+
+    private String correctAnswer;
 
     public enum QuizType {
         MC, TF, SA

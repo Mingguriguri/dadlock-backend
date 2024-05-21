@@ -27,7 +27,7 @@ public class QuizController {
     @GetMapping
     public ApiResponse<QuizResponseDTO.CommonDTO> getRandomQuiz(@AuthenticationPrincipal CustomOAuth2User user) {
         try {
-            QuizResponseDTO.CommonDTO quiz = quizService.getRandomQuiz(); // 랜덤 문제 하나 가져오기
+            QuizResponseDTO.CommonDTO quiz = quizService.getRandomQuiz(); // 랜덤 문제 가져오기
             return ApiResponse.responseSuccess(StatusEnum.OK, quiz, "퀴즈 조회 성공");
         } catch (Exception e) {
             logger.error("Error getting quiz", e.getMessage(), e);
