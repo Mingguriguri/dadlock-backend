@@ -3,6 +3,7 @@ package swe.backend.dadlock.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import swe.backend.dadlock.dto.oauth2.CustomOAuth2User;
 import swe.backend.dadlock.dto.webapp.WebAppRequestDTO;
 import swe.backend.dadlock.dto.webapp.WebAppResponseDTO;
 import swe.backend.dadlock.entity.User;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional(readOnly = false) // true 로 되어 있으면 POST로 입력 시 에러가 나서 false로 수정하였습니다. (Connection is read-only. Queries leading to data modification are not allowed)
 @RequiredArgsConstructor
 public class WebAppService {
 
@@ -45,9 +46,9 @@ public class WebAppService {
         return new WebAppResponseDTO.CommonDTO(updatedWebApp);
     }
 
-    public void deleteWebApp(String userGoogleId, Long webAppId) {
+    public void deleteWebApp(CustomOAuth2User user, Long webAppId) {
         WebApp findWebApp = findWebAppById(webAppId);
-        validWebAppUrlOwner(userGoogleId, findWebApp);
+        validWebAppUrlOwner(user.getGoogleId(), findWebApp);
         webAppRepository.delete(findWebApp);
     }
 

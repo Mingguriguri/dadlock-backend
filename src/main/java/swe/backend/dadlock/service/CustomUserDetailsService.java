@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import swe.backend.dadlock.dto.oauth2.CustomOAuth2User;
+import swe.backend.dadlock.dto.oauth2.JoinGoogleUserDTO;
 import swe.backend.dadlock.entity.User;
 import swe.backend.dadlock.repository.UserRepository;
 
@@ -19,6 +20,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String googleId) throws UsernameNotFoundException {
         User user = userRepository.findById(googleId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return CustomOAuth2User.create(user);
+        JoinGoogleUserDTO joinGoogleUserDTO = new JoinGoogleUserDTO(
+                user.getGoogleId(), user.getNickname(), user.getRole().name());
+        return new CustomOAuth2User(null, joinGoogleUserDTO);
     }
 }
