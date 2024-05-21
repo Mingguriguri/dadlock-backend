@@ -29,7 +29,7 @@ public class UserSession {
 
     private LocalDateTime lastUpdateTime;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime endTime;
 
     @Builder
