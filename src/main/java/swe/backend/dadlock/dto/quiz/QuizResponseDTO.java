@@ -53,7 +53,6 @@ public class QuizResponseDTO {
             this.quizId = attempt.getQuiz().getQuizId();
             this.isCorrect = attempt.getIsCorrect();
             this.attemptTime = attempt.getAttemptTime();
-
         }
     }
 }

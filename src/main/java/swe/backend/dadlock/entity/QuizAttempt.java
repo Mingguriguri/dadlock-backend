@@ -30,9 +30,10 @@ public class QuizAttempt {
     private LocalDateTime attemptTime = LocalDateTime.now();
 
     @Builder
-    public QuizAttempt(Quiz quiz, User user, Boolean isCorrect) {
+    public QuizAttempt(Quiz quiz, User user, Boolean isCorrect, LocalDateTime attemptTime) {
         this.quiz = quiz;
         this.user = user;
         this.isCorrect = isCorrect;
+        this.attemptTime = attemptTime;
     }
 }
