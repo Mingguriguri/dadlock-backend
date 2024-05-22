@@ -42,7 +42,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             googleJoinService.updateGoogleUser(joinGoogleUserDTO);
         }
 
-        return new CustomOAuth2User(joinGoogleUserDTO);
+        return new CustomOAuth2User(oAuth2User, joinGoogleUserDTO);
     }
 
 

@@ -1,5 +1,10 @@
 package swe.backend.dadlock.config;
 
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
+import swe.backend.dadlock.filter.CustomLogoutFilter;
+import swe.backend.dadlock.filter.JwtAuthenticationFilter;
+import swe.backend.dadlock.service.CustomUserDetailsService;
 import swe.backend.dadlock.service.JwtUtil;
 import swe.backend.dadlock.service.RedisUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,21 +29,12 @@ import org.springframework.web.filter.CorsFilter;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-    private static final String[] AUTH_WHITELIST = {
-            "/oauth2/**", "/swagger-ui/**", "/api-docs", "/swagger-ui-custom.html",
-            "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html", "/reissue",
-    }; // 인증 필터를 거치지 않는 경로
-
-    // 의존성 주입
-    private final AuthenticationConfiguration authenticationConfiguration;
+    
     private final JwtUtil jwtUtil; // jwtutil 생성자 주입
-    private final ObjectMapper objectMapper;
     private final RedisUtil redisUtil;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
-
-
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Bean
     public CorsFilter corsFilter() {
@@ -68,34 +64,36 @@ public class SecurityConfig {
                 .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
         //csrf disable
         http
-                .csrf((auth) -> auth.disable());
+                .csrf(csrf -> csrf.disable());
 
         //From 로그인 방식 disable
         http
-                .formLogin((auth) -> auth.disable());
+                .formLogin(formLogin -> formLogin.disable());
 
         //http basic 인증 방식 disable
         http
-                .httpBasic((auth) -> auth.disable());
+                .httpBasic(httpBasic -> httpBasic.disable());
 
         //경로별 인가 작업
         http
-                .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers(AUTH_WHITELIST).permitAll()
-                        .anyRequest().authenticated() // 나머지 요청은 모두 인증 필요
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/join").authenticated()
+                        .anyRequest().permitAll()
                 );
 
         //oauth2
         http
-                .oauth2Login((oauth2) -> oauth2
-                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
                                 .userService(customOAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
                 );
 
+        http.addFilterBefore(new CustomLogoutFilter(jwtUtil, redisUtil), LogoutFilter.class);
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, customUserDetailsService), UsernamePasswordAuthenticationFilter.class);
         //세션 설정
         http
-                .sessionManagement((session) -> session
+                .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();

@@ -34,14 +34,16 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
         CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+        log.info("CustomOAuth2User: {}", customOAuth2User);
 
-        String googleId = customOAuth2User.getName();
-
+        String googleId = customOAuth2User.getGoogleId();
         log.info("googleId {}",googleId);
 
         OAuth2AuthorizedClient client = oAuth2AuthorizedClientService.loadAuthorizedClient(
                 "google", authentication.getName());
         String googleAccessToken = client.getAccessToken().getTokenValue();
+
+        log.info("Google Access Token: {}", googleAccessToken); // 로그 추가: 구글 액세스 토큰 확인
 
         redisUtil.setData(googleId, googleAccessToken);
 
@@ -52,8 +54,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String accessToken = jwtUtil.createToken("access", googleId, role, 1000*60*10L); // access token 생성 유효기간 10분
+        String accessToken = jwtUtil.createToken("access", googleId, role, 1000*60*60L); // access token 생성 유효기간 1시간
         String refreshToken = jwtUtil.createToken("refresh", googleId, role, 1000*60*60*24L); // refresh token 생성 유효기간 24시간
+
+        log.info("Access Token: {}", accessToken); // 로그 추가: 액세스 토큰 확인
+        log.info("Refresh Token: {}", refreshToken); // 로그 추가: 리프레시 토큰 확인
 
         redisUtil.setData(accessToken, refreshToken); // 레디스에 리프레시 토큰 저장
 
@@ -61,6 +66,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(createCookie(refreshToken)); // refresh token은 쿠키에
         response.setStatus(HttpStatus.OK.value());
         response.getWriter().write("Social_LOGIN_SUCCESS");
+
+        // 세션에 사용자 정보 저장
+        request.getSession().setAttribute("user", customOAuth2User);
     }
 
     private Cookie createCookie(String value) {
@@ -68,6 +76,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Cookie cookie = new Cookie("refresh", value);
         cookie.setMaxAge(24*60*60); // 쿠키 유효시간 24시간으로 설정
         cookie.setHttpOnly(true); // XSS 공격 방어
+        cookie.setSecure(true); // https 옵션 설정
+        cookie.setPath("/"); // 모든 곳에서 쿠키 열람이 가능하도록 설정
 
         return cookie;
     }

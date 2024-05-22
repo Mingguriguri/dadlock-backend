@@ -17,33 +17,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CustomOAuth2User implements OAuth2User, UserDetails {
 
-    @Getter
-    private String googleId;
-    private swe.backend.dadlock.dto.oauth2.JoinGoogleUserDTO joinGoogleUserDTO;
-
-    public CustomOAuth2User(String googleId) {
-        this.googleId = googleId;
-    }
-
-    public CustomOAuth2User(JoinGoogleUserDTO joinGoogleUserDTO) {
-        this.joinGoogleUserDTO = joinGoogleUserDTO;
-    }
-
-    public CustomOAuth2User(String googleId, JoinGoogleUserDTO joinGoogleUserDTO) {
-        this.googleId = googleId;
-        this.joinGoogleUserDTO = joinGoogleUserDTO;
-    }
-
-    public static CustomOAuth2User create(User user) {
-        return new CustomOAuth2User(
-                user.getGoogleId()
-        );
-    }
+    private final OAuth2User oAuth2User;
+    private final JoinGoogleUserDTO joinGoogleUserDTO;
 
     @Override
     public Map<String, Object> getAttributes() {
 
-        return null;
+        return oAuth2User.getAttributes();
     }
 
     @Override
@@ -65,18 +45,21 @@ public class CustomOAuth2User implements OAuth2User, UserDetails {
 
     @Override
     public String getPassword() {
-        return null;
+        return "";
     }
 
     @Override
     public String getName() {
-
         return joinGoogleUserDTO.getGoogleId();
     }
 
     public String getUsername() {
 
         return joinGoogleUserDTO.getNickname();
+    }
+
+    public String getGoogleId(){
+        return joinGoogleUserDTO.getGoogleId();
     }
 
     @Override
