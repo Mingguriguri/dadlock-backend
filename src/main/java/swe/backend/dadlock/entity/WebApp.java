@@ -25,11 +25,15 @@ public class WebApp {
 
     private int timeLimit;
 
+    @Enumerated(EnumType.STRING)
+    Subject subject;
+
     @Builder
-    public WebApp(User user, String appUrl, int timeLimit) {
+    public WebApp(User user, String appUrl, int timeLimit, Subject subject) {
         this.user = user;
         this.appUrl = appUrl;
         this.timeLimit = timeLimit;
+        this.subject = subject;
     }
 
     public void updateInfo(WebAppRequestDTO.UpdateDTO dto) {
