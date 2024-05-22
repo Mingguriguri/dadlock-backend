@@ -38,10 +38,12 @@ public class QuizService {
         User user = findUserByGoogleId(userGoogleId);
         Quiz quiz = findQuizById(quizId);
 
+        // 퀴즈에 답변한 답이 정답인지 판단
         boolean isCorrect = quizRepository.getCorrectAnswer(quizId)
                 .map(answer -> answer.equals(attemptDTO.getAnswer()))
                 .orElse(false);
 
+        // 퀴즈 Attempt에 저장
         QuizAttempt attempt = QuizAttempt.builder()
                 .quiz(quiz)
                 .user(user)

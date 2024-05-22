@@ -13,6 +13,7 @@ import java.util.Optional;
 @Repository
 public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
+    // quizId로 퀴즈의 정답 조회
     @Query("SELECT q.correctAnswer " +
             "FROM Quiz q " +
             "WHERE q.quizId = :quizId")
