@@ -1,4 +1,10 @@
-CREATE TABLE Quiz (
+-- MySQL의 문자 집합 설정 (UTF-8로 인코딩하도록)
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+SET character_set_connection=utf8mb4;
+
+
+CREATE TABLE IF NOT EXISTS Quiz (
                       quizId BIGINT AUTO_INCREMENT PRIMARY KEY,
                       subject VARCHAR(255) NOT NULL,
                       type VARCHAR(255) NOT NULL,
@@ -12,18 +18,12 @@ CREATE TABLE Quiz (
                       optionE VARCHAR(255)
 );
 
-CREATE TABLE QuizAttempt (
-                             attemptId BIGINT AUTO_INCREMENT PRIMARY KEY,
-                             quizId BIGINT,
-                             userId BIGINT,
-                             isCorrect BOOLEAN,
-                             attemptTime DATETIME,
-                             FOREIGN KEY (quizId) REFERENCES Quiz(quizId),
-                             FOREIGN KEY (userId) REFERENCES User(userId)
-);
-
 -- Quiz 테이블에 데이터 삽입
-INSERT INTO Quiz (subject, type, level, question, correctAnswer, optionA, optionB, optionC, optionD, optionE) VALUES
-                                                                                                                  ('시사', 'MC', 'EZ', 'OECD 국가 중 가장 출산율이 낮은 국가는?', '한국', '한국', '일본', '미국', '프랑스', '독일'),
-                                                                                                                  ('과학', 'TF', 'MD', '물은 두 개의 수소 원자와 하나의 산소 원자로 이루어져 있다.', 'True', 'True', 'False', NULL, NULL, NULL),
-                                                                                                                  ('수학', 'SA', 'HD', 'π의 소수점 이하 첫째 자리는?', '3.1', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO Quiz (subject, type, level, question, correctAnswer, optionA, optionB, optionC, optionD, optionE)
+VALUES
+          ('시사', 'MC', 'EZ', '2022년 기준 한국의 고령화 지수(65세 이상 인구비율)는 약?', '25%', '8%', '15%', '25%', '33%', '40%'),
+          ('과학', 'TF', 'MD', '인간의 유전자는 46개의 염색체로 구성되어 있다.', 'True', 'True', 'False', NULL, NULL, NULL),
+          ('경제', 'SA', 'HD', '정부가 재정 적자를 메우기 위해 발행하는 것은 무엇인가요?', '국채', NULL, NULL, NULL, NULL, NULL),
+          ('역사', 'MC', 'HD', '중세 유럽에서 "흑사병"이 대규모로 발생한 시기는 언제인가요?', '14세기', '11세기', '12세기', '13세기', '14세기', '15세기'),
+          ('영단어', 'TF', 'MD', 'Envy는 시기심을 뜻하는 영단어이다.', 'True', 'True', 'False', NULL, NULL, NULL),
+          ('건강', 'SA', 'EZ', '폐 기능 향상을 위한 운동은?', '조깅', NULL, NULL, NULL, NULL, NULL);
