@@ -32,36 +32,60 @@ public class WebAppController {
     @GetMapping
     public ApiResponse<List<WebAppResponseDTO.CommonDTO>> getWebAppUrlList(@AuthenticationPrincipal CustomOAuth2User user) {
         logger.info("User: {}", user);
+        if (user == null) {
+            return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");
+        }
+        try {
+            List<WebAppResponseDTO.CommonDTO> webAppUrlList = webAppService.getUrlList(user.getName());
+            return ApiResponse.responseSuccess(StatusEnum.OK, webAppUrlList, "회원의 URL 리스트 조회 성공!");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "회원 리스트 조회 실패 : " + e.getMessage());
+        }
 
-        List<WebAppResponseDTO.CommonDTO> webAppUrlList = webAppService.getUrlList(user.getName());
-        return ApiResponse.responseSuccess(StatusEnum.OK, webAppUrlList, "회원의 URL 리스트 조회 성공!");
     }
-
-//    @GetMapping("/test")
-//    public ResponseEntity<String> testEndpoint(@AuthenticationPrincipal CustomOAuth2User user) {
-//        logger.info("User: {}", user);
-//        if (user == null) {
-//            logger.error("User is null");
-//            return ResponseEntity.notFound().build();
-//        }
-//        return new ResponseEntity<>("User GoogleId: " + user.getGoogleId(), HttpStatus.OK);
-//    }
 
     @PostMapping
     public ApiResponse<WebAppResponseDTO.CommonDTO> createBlockUrl(@AuthenticationPrincipal CustomOAuth2User user, @RequestBody WebAppRequestDTO.CreateDTO requestDTO) {
-        WebAppResponseDTO.CommonDTO webAppUrl = webAppService.createWebApp(user.getGoogleId(), requestDTO);
-        return ApiResponse.responseSuccess(StatusEnum.OK, webAppUrl, "URL 생성 성공!");
+        if (user == null) {
+            return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");
+        }
+        try {
+            WebAppResponseDTO.CommonDTO webAppUrl = webAppService.createWebApp(user.getGoogleId(), requestDTO);
+            return ApiResponse.responseSuccess(StatusEnum.OK, webAppUrl, "URL 생성 성공!");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "URL 생성 실패 : " + e.getMessage());
+        }
+
     }
 
     @PutMapping("{id}")
     public ApiResponse<WebAppResponseDTO.CommonDTO> updateBlockUrl(@PathVariable("id") Long webAppId, @AuthenticationPrincipal CustomOAuth2User user, @RequestBody WebAppRequestDTO.UpdateDTO requestDTO) {
-        WebAppResponseDTO.CommonDTO webAppUrl = webAppService.updateWebAppInfo(webAppId, user.getGoogleId(), requestDTO);
-        return ApiResponse.responseSuccess(StatusEnum.OK, webAppUrl, "URL 수정 성공!");
+        if (user == null) {
+            return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");
+        }
+        try {
+            WebAppResponseDTO.CommonDTO webAppUrl = webAppService.updateWebAppInfo(webAppId, user.getGoogleId(), requestDTO);
+            return ApiResponse.responseSuccess(StatusEnum.OK, webAppUrl, "URL 수정 성공!");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "URL 수정 실패 : " + e.getMessage());
+        }
+
     }
 
     @DeleteMapping("{id}")
     public ApiResponse deleteWebApp(@PathVariable("id") Long webAppId, @AuthenticationPrincipal CustomOAuth2User user) {
-        webAppService.deleteWebApp(user, webAppId);
-        return ApiResponse.responseSuccessWithNoContent("URL 삭제 성공!");
+        if (user == null) {
+            return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");
+        }
+        try {
+            webAppService.deleteWebApp(user, webAppId);
+            return ApiResponse.responseSuccessWithNoContent("URL 삭제 성공!");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "URL 삭제 실패 : " + e.getMessage());
+        }
     }
 }

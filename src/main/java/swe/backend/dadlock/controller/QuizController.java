@@ -26,23 +26,29 @@ public class QuizController {
 
     @GetMapping
     public ApiResponse<QuizResponseDTO.CommonDTO> getRandomQuiz(@AuthenticationPrincipal CustomOAuth2User user) {
+        if (user == null) {
+            return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");
+        }
         try {
             QuizResponseDTO.CommonDTO quiz = quizService.getRandomQuiz(); // 랜덤 문제 가져오기
             return ApiResponse.responseSuccess(StatusEnum.OK, quiz, "퀴즈 조회 성공");
         } catch (Exception e) {
             logger.error("Error getting quiz", e.getMessage(), e);
-            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "퀴즈 조회 실패" + e);
+            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "퀴즈 조회 실패 : " + e.getMessage());
         }
     }
 
     @PostMapping("/{quiz_id}/attempt")
     public ApiResponse<QuizResponseDTO.AttemptDTO> attemptQuiz(@AuthenticationPrincipal CustomOAuth2User user, @PathVariable("quiz_id") Long quizId, @RequestBody QuizRequestDTO.AttemptDTO attemptDTO){
+        if (user == null) {
+            return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");
+        }
         try {
             QuizResponseDTO.AttemptDTO attempt = quizService.saveQuizAttempt(user.getGoogleId(), quizId, attemptDTO);
             return ApiResponse.responseSuccess(StatusEnum.OK, attempt, "퀴즈 답변 성공");
         } catch (Exception e){
             logger.error("Error attempting quiz", e);
-            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "퀴즈 답변 업로드 실패");
+            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "퀴즈 답변 업로드 실패 : " + e.getMessage());
         }
     }
 

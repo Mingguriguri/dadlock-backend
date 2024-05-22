@@ -31,35 +31,44 @@ public class UserSessionController {
 
     @PostMapping("/start")
     public ApiResponse<UserSessionResponseDTO.CommonDTO> startSession(@AuthenticationPrincipal CustomOAuth2User user, @RequestBody UserSessionRequestDTO.StartDTO requestDTO) {
+        if (user == null) {
+            return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");
+        }
         try {
             UserSessionResponseDTO.CommonDTO userSession = userSessionService.startSession(user.getGoogleId(), requestDTO);
             return ApiResponse.responseSuccess(StatusEnum.OK, userSession, "성공적으로 세션 시작");
         } catch (Exception e) {
             logger.error("Error starting session", e);
-            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "세션 시작 실패");
+            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "세션 시작 실패 : " + e.getMessage());
         }
 
     }
 
     @PostMapping("/update")
     public ApiResponse<UserSessionResponseDTO.CommonDTO> updateSession(@AuthenticationPrincipal CustomOAuth2User user, @RequestBody UserSessionRequestDTO.UpdateDTO requestDTO){
+        if (user == null) {
+            return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");
+        }
         try {
             UserSessionResponseDTO.CommonDTO userSession = userSessionService.updateSession(user.getGoogleId(), requestDTO);
             return ApiResponse.responseSuccess(StatusEnum.OK, userSession, "성공적으로 세션 업데이트");
         } catch (Exception e){
             logger.error("Error updating session", e);
-            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "세션 업데이트 실패");
+            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "세션 업데이트 실패 : " + e.getMessage());
         }
     }
 
     @PostMapping("/end")
     public ApiResponse<UserSessionResponseDTO.CommonDTO> endSession(@AuthenticationPrincipal CustomOAuth2User user, @RequestBody UserSessionRequestDTO.EndDTO requestDTO){
+        if (user == null) {
+            return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");
+        }
         try {
             UserSessionResponseDTO.CommonDTO userSession = userSessionService.endSession(user.getGoogleId(), requestDTO);
             return ApiResponse.responseSuccess(StatusEnum.OK, userSession, "성공적으로 세션 종료");
         } catch (Exception e){
             logger.error("Error ending session", e);
-            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "세션 종료 실패");
+            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "세션 종료 실패 : " + e.getMessage());
         }
     }
 
