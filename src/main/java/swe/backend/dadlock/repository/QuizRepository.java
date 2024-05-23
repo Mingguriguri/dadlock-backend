@@ -32,7 +32,7 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q " +
             "FROM Quiz q " +
             "WHERE q.subject = :subject " +
-            "ORDER BY RAND()")
+            "ORDER BY function('RAND')")
     List<Quiz> findQuizzesBySubject(Subject subject, PageRequest pageRequest);
 
 }

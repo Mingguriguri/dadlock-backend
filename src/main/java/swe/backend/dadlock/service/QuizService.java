@@ -1,6 +1,7 @@
 package swe.backend.dadlock.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.util.Optional;
 @Service
 @Transactional(readOnly = false)
 @RequiredArgsConstructor
+@Slf4j
 public class QuizService {
 
     private final QuizRepository quizRepository;
@@ -30,14 +32,17 @@ public class QuizService {
     private final WebAppRepository webAppRepository;
 
     // 특정 주제에 대한 랜덤 퀴즈 반환
-    public QuizResponseDTO.CommonDTO getRandomQuizBySubject(String userGoogleId, String appUrl){
+    public QuizResponseDTO.CommonDTO getRandomQuizBySubject(String userGoogleId, String appUrl) {
         Subject subject = webAppRepository.findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 설정한 주제가 없습니다."))
                 .getSubject();
+        log.info("Subject: {}", subject);  // 로그 추가
         List<Quiz> quizzes = quizRepository.findQuizzesBySubject(subject, PageRequest.of(0, 1));
+        log.info("Quizzes found: {}", quizzes.size());  // 로그 추가
         Quiz quiz = quizzes.stream().findFirst().orElseThrow(() -> new IllegalArgumentException("해당 주제의 퀴즈를 찾을 수 없습니다."));
         return new QuizResponseDTO.CommonDTO(quiz);
     }
+
 
     // 기존 랜덤 퀴즈 (랜덤하게 정렬된 퀴즈 리스트에서 맨 앞에 있는 퀴즈를 선택)
     public QuizResponseDTO.CommonDTO getRandomQuiz() {
