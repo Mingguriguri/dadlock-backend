@@ -31,18 +31,30 @@ public class QuizService {
     private final UserRepository userRepository;
     private final WebAppRepository webAppRepository;
 
-    // 특정 주제에 대한 랜덤 퀴즈 반환
-    public QuizResponseDTO.CommonDTO getRandomQuizBySubject(String userGoogleId, String appUrl) {
+    // 특정 주제에 대한 랜덤 퀴즈를 문제 레벨별로 반환
+    public QuizResponseDTO.CommonDTO getRandomQuizBySubject(String userGoogleId, String appUrl){
         Subject subject = webAppRepository.findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 설정한 주제가 없습니다."))
                 .getSubject();
-        log.info("Subject: {}", subject);  // 로그 추가
-        List<Quiz> quizzes = quizRepository.findQuizzesBySubject(subject, PageRequest.of(0, 1));
-        log.info("Quizzes found: {}", quizzes.size());  // 로그 추가
+
+        Quiz.QuizLevel level = determineQuizLevel(userGoogleId, subject);
+
+        List<Quiz> quizzes = quizRepository.findQuizzesBySubjectAndLevel(subject, level, PageRequest.of(0, 1));
         Quiz quiz = quizzes.stream().findFirst().orElseThrow(() -> new IllegalArgumentException("해당 주제의 퀴즈를 찾을 수 없습니다."));
         return new QuizResponseDTO.CommonDTO(quiz);
     }
 
+    private Quiz.QuizLevel determineQuizLevel(String userGoogleId, Subject subject) {
+        long incorrectCount = quizAttemptRepository.countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject);
+
+        if (incorrectCount >= 2) {
+            return Quiz.QuizLevel.HD;
+        } else if (incorrectCount == 1) {
+            return Quiz.QuizLevel.MD;
+        } else {
+            return Quiz.QuizLevel.EZ;
+        }
+    }
 
     // 기존 랜덤 퀴즈 (랜덤하게 정렬된 퀴즈 리스트에서 맨 앞에 있는 퀴즈를 선택)
     public QuizResponseDTO.CommonDTO getRandomQuiz() {
@@ -67,9 +79,15 @@ public class QuizService {
                 .user(user)
                 .isCorrect(isCorrect)
                 .attemptTime(LocalDateTime.now())
+                .level(quiz.getLevel())
                 .build();
 
         QuizAttempt savedAttempt = quizAttemptRepository.save(attempt);
+
+        // 정답일 경우 틀린 횟수 초기화
+        if (isCorrect) {
+            quizAttemptRepository.resetIncorrectCount(userGoogleId, quiz.getSubject());
+        }
 
         return new QuizResponseDTO.AttemptDTO(savedAttempt);
     }

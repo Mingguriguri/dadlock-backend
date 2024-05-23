@@ -28,11 +28,11 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
             "ORDER BY function('RAND')")
     List<Quiz> getRandomQuiz(Pageable pageable);
 
-    // 퀴즈 주제별로 랜덤 설정
+    // 퀴즈 주제와 난이도별로 랜덤 설정
     @Query("SELECT q " +
             "FROM Quiz q " +
-            "WHERE q.subject = :subject " +
+            "WHERE q.subject = :subject AND q.level = :level " +
             "ORDER BY function('RAND')")
-    List<Quiz> findQuizzesBySubject(Subject subject, PageRequest pageRequest);
+    List<Quiz> findQuizzesBySubjectAndLevel(@Param("subject") Subject subject, @Param("level") Quiz.QuizLevel level, PageRequest pageRequest);
 
 }
