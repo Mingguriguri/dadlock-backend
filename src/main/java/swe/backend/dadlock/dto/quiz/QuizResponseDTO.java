@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import swe.backend.dadlock.entity.Quiz;
 import swe.backend.dadlock.entity.QuizAttempt;
+import swe.backend.dadlock.entity.Subject;
 import swe.backend.dadlock.entity.UserSession;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,7 @@ public class QuizResponseDTO {
     public static class CommonDTO {
         // 퀴즈 답변을 할 때는 정답(correctAnswer)을 볼 수 없어야 하기 대문에 correctAnswer는 포함하지 않음
         private Long id;
-        private String subject;
+        private Subject subject;
         private Quiz.QuizType type;
         private Quiz.QuizLevel level;
         private String question;

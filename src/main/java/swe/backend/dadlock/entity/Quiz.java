@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Entity
@@ -17,7 +18,8 @@ public class Quiz {
     @Column(name = "quiz_id")
     private Long quizId;
 
-    private String subject;
+    @Enumerated(EnumType.STRING)
+    private Subject subject;
 
     @Enumerated(EnumType.STRING)
     private QuizType type;
@@ -35,6 +37,9 @@ public class Quiz {
     private String optionE;
 
     private String correctAnswer;
+
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuizAttempt> quizAttempts;
 
     /*
     퀴즈 유형

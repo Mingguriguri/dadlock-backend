@@ -25,6 +25,21 @@ public class QuizController {
     private static final Logger logger = LoggerFactory.getLogger(QuizController.class);
 
     @GetMapping
+    public ApiResponse<QuizResponseDTO.CommonDTO> getRandomQuizByUrl(@AuthenticationPrincipal CustomOAuth2User user, @RequestParam String appUrl) {
+        if (user == null) {
+            return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");
+        }
+        try {
+            QuizResponseDTO.CommonDTO quiz = quizService.getRandomQuizBySubject(user.getGoogleId(), appUrl); // 유저가 설정한 Url에 따른 퀴즈 주제를 기준으로 랜덤 문제
+            return ApiResponse.responseSuccess(StatusEnum.OK, quiz, "퀴즈 조회 성공");
+        } catch (Exception e) {
+            logger.error("Error getting quiz", e.getMessage(), e);
+            return ApiResponse.responseSuccess(StatusEnum.INTERNAL_SERVER_ERROR, null, "퀴즈 조회 실패 : " + e.getMessage());
+        }
+    }
+
+    // 전체 문제 랜덤
+    @GetMapping("/all")
     public ApiResponse<QuizResponseDTO.CommonDTO> getRandomQuiz(@AuthenticationPrincipal CustomOAuth2User user) {
         if (user == null) {
             return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");

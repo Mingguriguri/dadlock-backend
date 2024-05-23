@@ -8,10 +8,12 @@ import swe.backend.dadlock.dto.quiz.QuizRequestDTO;
 import swe.backend.dadlock.dto.quiz.QuizResponseDTO;
 import swe.backend.dadlock.entity.Quiz;
 import swe.backend.dadlock.entity.QuizAttempt;
+import swe.backend.dadlock.entity.Subject;
 import swe.backend.dadlock.entity.User;
 import swe.backend.dadlock.repository.QuizAttemptRepository;
 import swe.backend.dadlock.repository.QuizRepository;
 import swe.backend.dadlock.repository.UserRepository;
+import swe.backend.dadlock.repository.WebAppRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,8 +27,19 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final QuizAttemptRepository quizAttemptRepository;
     private final UserRepository userRepository;
+    private final WebAppRepository webAppRepository;
 
-    // 랜덤 퀴즈 (랜덤하게 정렬된 퀴즈 리스트에서 맨 앞에 있는 퀴즈를 선택)
+    // 특정 주제에 대한 랜덤 퀴즈 반환
+    public QuizResponseDTO.CommonDTO getRandomQuizBySubject(String userGoogleId, String appUrl){
+        Subject subject = webAppRepository.findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 설정한 주제가 없습니다."))
+                .getSubject();
+        List<Quiz> quizzes = quizRepository.findQuizzesBySubject(subject, PageRequest.of(0, 1));
+        Quiz quiz = quizzes.stream().findFirst().orElseThrow(() -> new IllegalArgumentException("해당 주제의 퀴즈를 찾을 수 없습니다."));
+        return new QuizResponseDTO.CommonDTO(quiz);
+    }
+
+    // 기존 랜덤 퀴즈 (랜덤하게 정렬된 퀴즈 리스트에서 맨 앞에 있는 퀴즈를 선택)
     public QuizResponseDTO.CommonDTO getRandomQuiz() {
         List<Quiz> quizzes = quizRepository.getRandomQuiz(PageRequest.of(0, 1));
         Quiz quiz = quizzes.stream().findFirst().orElseThrow(() -> new IllegalArgumentException("퀴즈를 찾을 수 없습니다."));
