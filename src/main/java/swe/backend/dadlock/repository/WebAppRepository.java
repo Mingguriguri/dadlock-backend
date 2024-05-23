@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import swe.backend.dadlock.entity.WebApp;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface WebAppRepository extends JpaRepository<WebApp, Long> {
@@ -16,4 +17,11 @@ public interface WebAppRepository extends JpaRepository<WebApp, Long> {
             "where w.user.googleId = :googleId " +
             "order by w.id asc")
     List<WebApp> findWebAppListByGoogleId(@Param("googleId") String googleId);
+
+    @Query("SELECT w " +
+            "FROM WebApp w " +
+            "WHERE w.user.googleId = :googleId " +
+            "AND w.appUrl = :appUrl")
+    Optional<WebApp> findWebAppByUserGoogleIdAndAppUrl(@Param("googleId") String googleId, @Param("appUrl") String appUrl);
+
 }
