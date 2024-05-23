@@ -12,6 +12,7 @@ import swe.backend.dadlock.exception.NotOwnerException;
 import swe.backend.dadlock.repository.UserRepository;
 import swe.backend.dadlock.repository.WebAppRepository;
 
+import java.util.DuplicateFormatFlagsException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,13 @@ public class WebAppService {
 
     public WebAppResponseDTO.CommonDTO createWebApp(String userGoogleId, WebAppRequestDTO.CreateDTO requestDTO) {
         User findUser = findUserByGoogleId(userGoogleId);
+
+        // 이미 존재하는 URL이라면 저장하지 않음
+        webAppRepository.findWebAppByUserGoogleIdAndAppUrl(userGoogleId, requestDTO.getAppUrl())
+                .ifPresent(webApp -> {
+                    throw new DuplicateFormatFlagsException("이미 존재하는 URL입니다: " + requestDTO.getAppUrl());
+                });
+
         WebApp savedWebApp = webAppRepository.save(requestDTO.toEntity(findUser));
         return new WebAppResponseDTO.CommonDTO(savedWebApp);
     }
