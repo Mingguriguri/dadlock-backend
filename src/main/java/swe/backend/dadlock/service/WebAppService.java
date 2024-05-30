@@ -24,6 +24,7 @@ public class WebAppService {
     private final UserRepository userRepository;
     private final WebAppRepository webAppRepository;
 
+    @Transactional(readOnly = true)
     public List<WebAppResponseDTO.CommonDTO> getUrlList(String userGoogleId) {
         List<WebApp> webAppListByGoogleId = webAppRepository.findWebAppListByGoogleId(userGoogleId);
         List<WebAppResponseDTO.CommonDTO> responseDTOList = webAppListByGoogleId.stream()
@@ -54,9 +55,9 @@ public class WebAppService {
         return new WebAppResponseDTO.CommonDTO(updatedWebApp);
     }
 
-    public void deleteWebApp(CustomOAuth2User user, Long webAppId) {
+    public void deleteWebApp(String userGoogleId, Long webAppId) {
         WebApp findWebApp = findWebAppById(webAppId);
-        validWebAppUrlOwner(user.getGoogleId(), findWebApp);
+        validWebAppUrlOwner(userGoogleId, findWebApp);
         webAppRepository.delete(findWebApp);
     }
 
