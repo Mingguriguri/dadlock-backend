@@ -11,6 +11,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class QuizAttempt {
 
     @Id
