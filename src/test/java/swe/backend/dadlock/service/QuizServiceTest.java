@@ -1,6 +1,7 @@
 package swe.backend.dadlock.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -46,6 +47,7 @@ public class QuizServiceTest {
     }
 
     @Test
+    @DisplayName("랜덤 퀴즈 조회 - 주제와 URL이 유효한 경우")
     public void testGetRandomQuizBySubject() {
         // Given
         String userGoogleId = "user123";
@@ -91,7 +93,69 @@ public class QuizServiceTest {
     }
 
     @Test
-    public void testSaveQuizAttempt() {
+    @DisplayName("랜덤 퀴즈 조회 실패 - 주제와 URL이 유효하지 않은 경우")
+    public void testGetRandomQuizBySubject_InvalidUrl() {
+        // Given
+        String userGoogleId = "user123";
+        String appUrl = "invalidAppUrl";
+
+        when(webAppRepository.findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl))
+                .thenReturn(Optional.empty());
+
+        // When
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            quizService.getRandomQuizBySubject(userGoogleId, appUrl);
+        });
+
+        // Then
+        assertEquals("해당 사용자가 설정한 주제가 없습니다.", exception.getMessage());
+
+        verify(webAppRepository, times(1)).findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl);
+        verify(quizAttemptRepository, never()).countByUserGoogleIdAndSubjectAndIsCorrectFalse(anyString(), any(Subject.class));
+        verify(quizRepository, never()).findQuizzesBySubjectAndLevel(any(Subject.class), any(Quiz.QuizLevel.class), any());
+    }
+
+    @Test
+    @DisplayName("퀴즈 레벨 결정 - 틀린 횟수가 1인 경우")
+    public void testDetermineQuizLevel_MD() {
+        // Given
+        String userGoogleId = "user123";
+        Subject subject = Subject.SCIENCE;
+
+        when(quizAttemptRepository.countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject))
+                .thenReturn(1L);
+
+        // When
+        Quiz.QuizLevel level = determineQuizLevel(userGoogleId, subject);
+
+        // Then
+        assertEquals(Quiz.QuizLevel.MD, level);
+
+        verify(quizAttemptRepository, times(1)).countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject);
+    }
+
+    @Test
+    @DisplayName("퀴즈 레벨 결정 - 틀린 횟수가 2 이상인 경우")
+    public void testDetermineQuizLevel_HD() {
+        // Given
+        String userGoogleId = "user123";
+        Subject subject = Subject.SCIENCE;
+
+        when(quizAttemptRepository.countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject))
+                .thenReturn(2L);
+
+        // When
+        Quiz.QuizLevel level = determineQuizLevel(userGoogleId, subject);
+
+        // Then
+        assertEquals(Quiz.QuizLevel.HD, level);
+
+        verify(quizAttemptRepository, times(1)).countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject);
+    }
+
+    @Test
+    @DisplayName("퀴즈 답변 저장 - 정답인 경우")
+    public void testSaveQuizAttempt_CorrectAnswer() {
         // Given
         String userGoogleId = "user123";
         Long quizId = 1L;
@@ -135,6 +199,7 @@ public class QuizServiceTest {
     }
 
     @Test
+    @DisplayName("퀴즈 답변 저장 - 오답인 경우")
     public void testSaveQuizAttempt_IncorrectAnswer() {
         // Given
         String userGoogleId = "user123";
@@ -178,64 +243,6 @@ public class QuizServiceTest {
         verify(quizAttemptRepository, never()).resetIncorrectCount(userGoogleId, quiz.getSubject());
     }
 
-    @Test
-    public void testDetermineQuizLevel_MD() {
-        // Given
-        String userGoogleId = "user123";
-        Subject subject = Subject.SCIENCE;
-
-        when(quizAttemptRepository.countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject))
-                .thenReturn(1L);
-
-        // When
-        Quiz.QuizLevel level = determineQuizLevel(userGoogleId, subject);
-
-        // Then
-        assertEquals(Quiz.QuizLevel.MD, level);
-
-        verify(quizAttemptRepository, times(1)).countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject);
-    }
-
-    @Test
-    public void testDetermineQuizLevel_HD() {
-        // Given
-        String userGoogleId = "user123";
-        Subject subject = Subject.SCIENCE;
-
-        when(quizAttemptRepository.countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject))
-                .thenReturn(2L);
-
-        // When
-        Quiz.QuizLevel level = determineQuizLevel(userGoogleId, subject);
-
-        // Then
-        assertEquals(Quiz.QuizLevel.HD, level);
-
-        verify(quizAttemptRepository, times(1)).countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject);
-    }
-
-    @Test
-    public void testGetRandomQuizBySubject_InvalidUrl() {
-        // Given
-        String userGoogleId = "user123";
-        String appUrl = "invalidAppUrl";
-
-        when(webAppRepository.findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl))
-                .thenReturn(Optional.empty());
-
-        // When
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            quizService.getRandomQuizBySubject(userGoogleId, appUrl);
-        });
-
-        // Then
-        assertEquals("해당 사용자가 설정한 주제가 없습니다.", exception.getMessage());
-
-        verify(webAppRepository, times(1)).findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl);
-        verify(quizAttemptRepository, never()).countByUserGoogleIdAndSubjectAndIsCorrectFalse(anyString(), any(Subject.class));
-        verify(quizRepository, never()).findQuizzesBySubjectAndLevel(any(Subject.class), any(Quiz.QuizLevel.class), any());
-    }
-
     private Quiz.QuizLevel determineQuizLevel(String userGoogleId, Subject subject) {
         long incorrectCount = quizAttemptRepository.countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject);
 
@@ -248,4 +255,3 @@ public class QuizServiceTest {
         }
     }
 }
-
