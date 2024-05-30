@@ -49,8 +49,8 @@ public class QuizServiceTest {
     @Test
     @DisplayName("랜덤 퀴즈 조회 - 주제와 URL이 유효한 경우")
     public void testGetRandomQuizBySubject() {
-        // Given
-        String userGoogleId = "user123";
+        // Given: 유효한 userGoogleId와 appUrl, 주제와 웹앱 설정이 존재하는 경우
+        String userGoogleId = "minbory925@gmail.com";
         String appUrl = "testAppUrl";
         Subject subject = Subject.SCIENCE;
         User user = new User();
@@ -81,10 +81,10 @@ public class QuizServiceTest {
         when(quizRepository.findQuizzesBySubjectAndLevel(subject, level, PageRequest.of(0, 1)))
                 .thenReturn(List.of(quiz));
 
-        // When
+        // When: 사용자가 해당 URL로 접속하여 랜덤 퀴즈를 요청하면
         QuizResponseDTO.CommonDTO result = quizService.getRandomQuizBySubject(userGoogleId, appUrl);
 
-        // Then
+        // Then: 해당 주제와 레벨의 랜덤 퀴즈를 반환한다
         assertEquals(quiz.getQuizId(), result.getId());
         assertEquals(quiz.getQuestion(), result.getQuestion());
         verify(webAppRepository, times(1)).findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl);
@@ -95,19 +95,19 @@ public class QuizServiceTest {
     @Test
     @DisplayName("랜덤 퀴즈 조회 실패 - 주제와 URL이 유효하지 않은 경우")
     public void testGetRandomQuizBySubject_InvalidUrl() {
-        // Given
-        String userGoogleId = "user123";
+        // Given: 사용자가 설정한 URL이 유효하지 않은 경우
+        String userGoogleId = "minbory925@gmail.com";
         String appUrl = "invalidAppUrl";
 
         when(webAppRepository.findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl))
                 .thenReturn(Optional.empty());
 
-        // When
+        // When: 사용자가 해당 URL로 랜덤 퀴즈를 요청하면
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             quizService.getRandomQuizBySubject(userGoogleId, appUrl);
         });
 
-        // Then
+        // Then: 예외가 발생하고, "해당 사용자가 설정한 주제가 없습니다." 메시지를 반환한다
         assertEquals("해당 사용자가 설정한 주제가 없습니다.", exception.getMessage());
 
         verify(webAppRepository, times(1)).findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl);
@@ -118,17 +118,17 @@ public class QuizServiceTest {
     @Test
     @DisplayName("퀴즈 레벨 결정 - 틀린 횟수가 1인 경우")
     public void testDetermineQuizLevel_MD() {
-        // Given
-        String userGoogleId = "user123";
+        // Given: 사용자가 특정 주제에 대해 틀린 횟수가 1인 경우
+        String userGoogleId = "minbory925@gmail.com";
         Subject subject = Subject.SCIENCE;
 
         when(quizAttemptRepository.countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject))
                 .thenReturn(1L);
 
-        // When
+        // When: 사용자가 퀴즈를 요청하면
         Quiz.QuizLevel level = determineQuizLevel(userGoogleId, subject);
 
-        // Then
+        // Then: 퀴즈의 난이도는 MD로 설정되어야 한다.
         assertEquals(Quiz.QuizLevel.MD, level);
 
         verify(quizAttemptRepository, times(1)).countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject);
@@ -137,17 +137,17 @@ public class QuizServiceTest {
     @Test
     @DisplayName("퀴즈 레벨 결정 - 틀린 횟수가 2 이상인 경우")
     public void testDetermineQuizLevel_HD() {
-        // Given
-        String userGoogleId = "user123";
+        // Given: 사용자가 특정 주제에 대해 틀린 횟수가 2 이상인 경우
+        String userGoogleId = "minbory925@gmail.com";
         Subject subject = Subject.SCIENCE;
 
         when(quizAttemptRepository.countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject))
                 .thenReturn(2L);
 
-        // When
+        // When:  사용자가 퀴즈를 요청하면
         Quiz.QuizLevel level = determineQuizLevel(userGoogleId, subject);
 
-        // Then
+        // Then: 퀴즈의 난이도는 HD로 설정된다
         assertEquals(Quiz.QuizLevel.HD, level);
 
         verify(quizAttemptRepository, times(1)).countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject);
@@ -156,8 +156,8 @@ public class QuizServiceTest {
     @Test
     @DisplayName("퀴즈 답변 저장 - 정답인 경우")
     public void testSaveQuizAttempt_CorrectAnswer() {
-        // Given
-        String userGoogleId = "user123";
+        // Given: 사용자가 특정 퀴즈에 대해 정답을 제출한 경우
+        String userGoogleId = "minbory925@gmail.com";
         Long quizId = 1L;
         QuizRequestDTO.AttemptDTO attemptDTO = QuizRequestDTO.AttemptDTO.builder()
                 .answer("Option A")
@@ -183,10 +183,10 @@ public class QuizServiceTest {
         when(quizRepository.getCorrectAnswer(quizId)).thenReturn(Optional.of("Option A"));
         when(quizAttemptRepository.save(any(QuizAttempt.class))).thenReturn(quizAttempt);
 
-        // When
+        // When: 사용자가 퀴즈에 대한 정답을 제출하면
         QuizResponseDTO.AttemptDTO result = quizService.saveQuizAttempt(userGoogleId, quizId, attemptDTO);
 
-        // Then
+        // Then: 제출된 답변의 정답 여부를 판단하고, 결과를 저장한다. 정답일 경우, 틀린 기록을 초기화한다
         assertEquals(quizAttempt.getAttemptId(), result.getAttemptId());
         assertEquals(quizAttempt.getQuiz().getQuizId(), result.getQuizId());
         assertEquals(quizAttempt.getIsCorrect(), result.getIsCorrect());
@@ -201,8 +201,8 @@ public class QuizServiceTest {
     @Test
     @DisplayName("퀴즈 답변 저장 - 오답인 경우")
     public void testSaveQuizAttempt_IncorrectAnswer() {
-        // Given
-        String userGoogleId = "user123";
+        // Given: 사용자가 퀴즈에 대한 오답을 제출한 경우
+        String userGoogleId = "minbory925@gmail.com";
         Long quizId = 1L;
         QuizRequestDTO.AttemptDTO attemptDTO = QuizRequestDTO.AttemptDTO.builder()
                 .answer("Option B")
@@ -228,10 +228,10 @@ public class QuizServiceTest {
         when(quizRepository.getCorrectAnswer(quizId)).thenReturn(Optional.of("Option A"));
         when(quizAttemptRepository.save(any(QuizAttempt.class))).thenReturn(quizAttempt);
 
-        // When
+        // When: 사용자가 오답을 제출하면
         QuizResponseDTO.AttemptDTO result = quizService.saveQuizAttempt(userGoogleId, quizId, attemptDTO);
 
-        // Then
+        // Then: 제출된 답변이 오답임을 판단하고, 결과를 저장한다. 오답일 경우, 틀린 기록을 초기화하지 않는다
         assertEquals(quizAttempt.getAttemptId(), result.getAttemptId());
         assertEquals(quizAttempt.getQuiz().getQuizId(), result.getQuizId());
         assertEquals(quizAttempt.getIsCorrect(), result.getIsCorrect());
