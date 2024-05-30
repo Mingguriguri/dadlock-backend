@@ -81,7 +81,7 @@ public class WebAppController {
             return ApiResponse.responseSuccess(StatusEnum.FORBIDDEN, null, "인증되지 않은 사용자입니다");
         }
         try {
-            webAppService.deleteWebApp(user, webAppId);
+            webAppService.deleteWebApp(user.getGoogleId(), webAppId);
             return ApiResponse.responseSuccessWithNoContent("URL 삭제 성공!");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

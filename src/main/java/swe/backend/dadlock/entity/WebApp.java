@@ -36,6 +36,15 @@ public class WebApp {
         this.subject = subject;
     }
 
+    public static WebApp create(User user, String appUrl, int timeLimit, Subject subject) {
+        return WebApp.builder()
+                .user(user)
+                .appUrl(appUrl)
+                .timeLimit(timeLimit)
+                .subject(subject)
+                .build();
+    }
+
     public void updateInfo(WebAppRequestDTO.UpdateDTO dto) {
         this.appUrl = dto.getAppUrl();
         this.timeLimit = dto.getTimeLimit();

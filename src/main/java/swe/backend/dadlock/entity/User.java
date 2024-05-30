@@ -2,9 +2,7 @@ package swe.backend.dadlock.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,6 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter @Setter
 @ToString
+@NoArgsConstructor
 public class User {
 
     @Id
@@ -33,4 +32,13 @@ public class User {
     @Column(nullable = false)
     private LocalDate createdAt;
 
+    @Builder
+    public User(String googleId, String nickname, LocalDateTime recentConnect, Role role, LocalDate deleteAt, LocalDate createdAt) {
+        this.googleId = googleId;
+        this.nickname = nickname;
+        this.recentConnect = recentConnect;
+        this.role = role;
+        this.deleteAt = deleteAt;
+        this.createdAt = createdAt;
+    }
 }
