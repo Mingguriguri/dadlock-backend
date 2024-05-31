@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter @Setter
 @ToString
 @NoArgsConstructor
+@Table(name = "users") // 테이블 이름을 명시적으로 설정
 public class User {
 
     @Id

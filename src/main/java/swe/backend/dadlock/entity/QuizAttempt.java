@@ -7,11 +7,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
+@Builder
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
-@Builder
 @AllArgsConstructor
 public class QuizAttempt {
 
@@ -29,6 +29,7 @@ public class QuizAttempt {
 
     private Boolean isCorrect;
 
+    @Builder.Default
     @Column(nullable = false, updatable = false)
     private LocalDateTime attemptTime = LocalDateTime.now();
 

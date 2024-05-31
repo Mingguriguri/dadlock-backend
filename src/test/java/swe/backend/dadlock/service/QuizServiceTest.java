@@ -46,23 +46,13 @@ public class QuizServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    @DisplayName("랜덤 퀴즈 조회 - 주제와 URL이 유효한 경우")
-    public void testGetRandomQuizBySubject() {
-        // Given: 유효한 userGoogleId와 appUrl, 주제와 웹앱 설정이 존재하는 경우
-        String userGoogleId = "minbory925@gmail.com";
-        String appUrl = "testAppUrl";
-        Subject subject = Subject.SCIENCE;
-        User user = new User();
-        WebApp webApp = WebApp.builder()
-                .user(user)
-                .appUrl(appUrl)
-                .timeLimit(30)
-                .subject(subject)
-                .build();
-        Quiz.QuizLevel level = Quiz.QuizLevel.EZ;
-        Quiz quiz = Quiz.builder()
-                .quizId(1L)
+    private User createUser(String userGoogleId) {
+        return User.builder().googleId(userGoogleId).build();
+    }
+
+    private Quiz createQuiz(Long quizId, Subject subject, Quiz.QuizLevel level, String correctAnswer) {
+        return Quiz.builder()
+                .quizId(quizId)
                 .subject(subject)
                 .level(level)
                 .question("Sample question")
@@ -71,8 +61,36 @@ public class QuizServiceTest {
                 .optionC("Option C")
                 .optionD("Option D")
                 .optionE("Option E")
-                .correctAnswer("Option A")
+                .correctAnswer(correctAnswer)
                 .build();
+    }
+
+    private QuizAttempt createQuizAttempt(User user, Quiz quiz, boolean isCorrect) {
+        return QuizAttempt.builder()
+                .quiz(quiz)
+                .user(user)
+                .isCorrect(isCorrect)
+                .attemptTime(LocalDateTime.now())
+                .level(quiz.getLevel())
+                .build();
+    }
+
+    @Test
+    @DisplayName("랜덤 퀴즈 조회 - 주제와 URL이 유효한 경우")
+    public void testGetRandomQuizBySubject() {
+        // Given: 유효한 userGoogleId와 appUrl, 주제와 웹앱 설정이 존재하는 경우
+        String userGoogleId = "minbory925@gmail.com";
+        String appUrl = "testAppUrl";
+        Subject subject = Subject.SCIENCE;
+        User user = createUser(userGoogleId);
+        WebApp webApp = WebApp.builder()
+                .user(user)
+                .appUrl(appUrl)
+                .timeLimit(30)
+                .subject(subject)
+                .build();
+        Quiz.QuizLevel level = Quiz.QuizLevel.EZ;
+        Quiz quiz = createQuiz(1L, subject, level, "Option A");
 
         when(webAppRepository.findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl))
                 .thenReturn(Optional.of(webApp));
@@ -128,7 +146,7 @@ public class QuizServiceTest {
         // When: 사용자가 퀴즈를 요청하면
         Quiz.QuizLevel level = determineQuizLevel(userGoogleId, subject);
 
-        // Then: 퀴즈의 난이도는 MD로 설정되어야 한다.
+        // Then: 퀴즈의 난이도는 MD로 설정되어야 한다
         assertEquals(Quiz.QuizLevel.MD, level);
 
         verify(quizAttemptRepository, times(1)).countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject);
@@ -144,7 +162,7 @@ public class QuizServiceTest {
         when(quizAttemptRepository.countByUserGoogleIdAndSubjectAndIsCorrectFalse(userGoogleId, subject))
                 .thenReturn(2L);
 
-        // When:  사용자가 퀴즈를 요청하면
+        // When: 사용자가 퀴즈를 요청하면
         Quiz.QuizLevel level = determineQuizLevel(userGoogleId, subject);
 
         // Then: 퀴즈의 난이도는 HD로 설정된다
@@ -163,20 +181,9 @@ public class QuizServiceTest {
                 .answer("Option A")
                 .build();
 
-        User user = User.builder().googleId(userGoogleId).build();
-        Quiz quiz = Quiz.builder()
-                .quizId(quizId)
-                .subject(Subject.SCIENCE)
-                .level(Quiz.QuizLevel.EZ)
-                .correctAnswer("Option A")
-                .build();
-        QuizAttempt quizAttempt = QuizAttempt.builder()
-                .quiz(quiz)
-                .user(user)
-                .isCorrect(true)
-                .attemptTime(LocalDateTime.now())
-                .level(quiz.getLevel())
-                .build();
+        User user = createUser(userGoogleId);
+        Quiz quiz = createQuiz(quizId, Subject.SCIENCE, Quiz.QuizLevel.EZ, "Option A");
+        QuizAttempt quizAttempt = createQuizAttempt(user, quiz, true);
 
         when(userRepository.findById(userGoogleId)).thenReturn(Optional.of(user));
         when(quizRepository.findById(quizId)).thenReturn(Optional.of(quiz));
@@ -208,20 +215,9 @@ public class QuizServiceTest {
                 .answer("Option B")
                 .build();
 
-        User user = User.builder().googleId(userGoogleId).build();
-        Quiz quiz = Quiz.builder()
-                .quizId(quizId)
-                .subject(Subject.SCIENCE)
-                .level(Quiz.QuizLevel.EZ)
-                .correctAnswer("Option A")
-                .build();
-        QuizAttempt quizAttempt = QuizAttempt.builder()
-                .quiz(quiz)
-                .user(user)
-                .isCorrect(false)
-                .attemptTime(LocalDateTime.now())
-                .level(quiz.getLevel())
-                .build();
+        User user = createUser(userGoogleId);
+        Quiz quiz = createQuiz(quizId, Subject.SCIENCE, Quiz.QuizLevel.EZ, "Option A");
+        QuizAttempt quizAttempt = createQuizAttempt(user, quiz, false);
 
         when(userRepository.findById(userGoogleId)).thenReturn(Optional.of(user));
         when(quizRepository.findById(quizId)).thenReturn(Optional.of(quiz));
