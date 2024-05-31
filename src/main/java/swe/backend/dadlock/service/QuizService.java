@@ -104,4 +104,14 @@ public class QuizService {
         return quizRepository.findById(quizId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 퀴즈가 존재하지 않습니다. quizId = " + quizId));
     }
+
+    // 유저가 특정 URL을 등록했는지 검증
+    public void validateUserAppUrl(String userGoogleId, String appUrl) {
+        boolean exists = webAppRepository.findWebAppByUserGoogleIdAndAppUrl(userGoogleId, appUrl).isPresent();
+        if (!exists) {
+            throw new IllegalArgumentException("해당 URL이 등록되지 않았습니다. appUrl = " + appUrl);
+        }
+    }
+
+
 }

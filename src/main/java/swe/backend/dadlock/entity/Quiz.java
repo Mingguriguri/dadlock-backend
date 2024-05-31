@@ -1,5 +1,6 @@
 package swe.backend.dadlock.entity;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,6 +12,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class Quiz {
 
     @Id

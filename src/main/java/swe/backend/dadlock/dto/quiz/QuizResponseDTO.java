@@ -26,6 +26,7 @@ public class QuizResponseDTO {
         private String optionC;
         private String optionD;
         private String optionE;
+        private String correctAnswer;
 
         public CommonDTO(Quiz quiz) {
             this.id = quiz.getQuizId();
@@ -38,8 +39,10 @@ public class QuizResponseDTO {
             this.optionC = quiz.getOptionC();
             this.optionD = quiz.getOptionD();
             this.optionE = quiz.getOptionE();
+            this.correctAnswer = quiz.getCorrectAnswer();
 
         }
+
     }
 
     @NoArgsConstructor(access = AccessLevel.PROTECTED)

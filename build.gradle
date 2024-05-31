@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.5'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'jacoco' // jacoco
 }
 
 group = 'swe.backend'
@@ -23,7 +24,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-
     // jwt 의존성 추가
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     //implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
@@ -41,10 +41,103 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // BBD mockito test를 위한 의존성 추가
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.mockito:mockito-core:4.0.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
+    // @DataJpaTest 시 내장된 데이터베이스가 필요하므로 h2 데이터베이스 의존성 추가
+    testImplementation 'com.h2database:h2'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport // report is always generated after tests run
+    jacoco {
+        enabled = true
+    }
 }
+
+/*
+실행 명령어: ./gradlew clean test jacocoTestReport jacocoTestCoverageVerification
+ */
+
+jacoco {
+    toolVersion = "0.8.8"
+    // reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
+    // default report Directory: layout.buildDirectory.dir("reports/jacoco")
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+
+    reports {
+        xml.required = true
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.3
+            }
+        }
+
+        rule {
+            enabled = false
+            element = 'CLASS'
+            includes = ['org.gradle.*']
+
+            limit {
+                counter = 'LINE'
+                value = 'TOTALCOUNT'
+                maximum = 0.3
+            }
+        }
+    }
+}
+//
+//jacocoTestCoverageVerification {
+//	violationRules {
+//		rule {
+//			limit {
+//				// 'counter'를 지정하지 않으면 default는 'INSTRUCTION'
+//				// 'value'를 지정하지 않으면 default는 'COVEREDRATIO'
+//				minimum = 0.5
+//			}
+//		}
+//
+//		rule {
+//
+//			enabled = true	 // 룰을 간단히 켜고 끌 수 있다.
+//			element = 'CLASS' // 룰을 체크할 단위는 클래스 단위
+//			includes = ['org.gradle.*']
+//
+//			// 브랜치 커버리지를 최소한 90% 만족시켜야 한다.
+//			limit {
+//				counter = 'BRANCH'
+//				value = 'COVEREDRATIO'
+//				minimum = 0.50
+//			}
+//
+//			// 라인 커버리지를 최소한 80% 만족시켜야 한다.
+//			limit {
+//				counter = 'LINE'
+//				value = 'COVEREDRATIO'
+//				minimum = 0.50
+//			}
+//
+//			// 빈 줄을 제외한 코드의 라인수를 최대 200라인으로 제한한다.
+//			limit {
+//				counter = 'LINE'
+//				value = 'TOTALCOUNT'
+//				maximum = 200
+//				minimum = 8
+//			}
+//		}
+//	}
+//}
